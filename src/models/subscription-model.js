@@ -6,25 +6,29 @@ const subscriptionSchema = new mongoose.Schema(
       type: String,
       required: [true, "Subscription name is required"],
       trim: true,
-      minLength: 2,
+      minLength: 3,
       maxLength: 100,
     },
     price: {
       type: Number,
       required: [true, "Subscription price is required"],
       min: [0, "Price must be greater than 0"],
+      trim: true
     },
     currency: {
       type: String,
+      required: true,
       enum: ["USD", "EUR", "GBP", "IDR"],
       default: "USD",
     },
     frequency: {
       type: String,
+      required: true,
       enum: ["daily", "weekly", "monthly", "yearly"],
     },
     category: {
       type: String,
+      required: true,
       enum: [
         "sports",
         "news",
@@ -48,6 +52,7 @@ const subscriptionSchema = new mongoose.Schema(
     },
     startDate: {
       type: Date,
+      required: true,
       validate: {
         validator: (value) => value <= new Date(),
         message: "Start date must be in the past",
@@ -66,7 +71,6 @@ const subscriptionSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
       index: true,
     },
   },

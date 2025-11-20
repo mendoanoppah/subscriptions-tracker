@@ -2,10 +2,13 @@ import Subscription from "../models/subscription-model.js";
 
 export async function createSubscription(req, res, next) {
   try {
-    const subscription = await Subscription({
+    const subscription = await Subscription.create({
       ...req.body,
       user: req.user._id,
     });
+
+    // const dataSubscription = subscription.toObject()
+    // delete subscription.__v;
 
     res.status(200).json({
       success: true,
@@ -26,7 +29,7 @@ export async function getUserSubscriptions(req, res, next) {
 
     const subscriptions = await Subscription.find({
       user: req.params.id,
-    });
+    }).select("-__v");
 
     res.status(200).json({
       success: true,

@@ -36,25 +36,23 @@ export const signUp = async (req, res, next) => {
       { session }
     );
 
-    const token = jwt.sign(
-      {
-        userId: newUsers[0]._id,
-      },
-      JWT_SECRET,
-      {
-        expiresIn: JWT_EXPIRES_IN,
-      }
-    );
+    const token = jwt.sign({ userId: newUsers[0]._id }, JWT_SECRET, {
+      expiresIn: JWT_EXPIRES_IN,
+    });
+    // console.log("Generated token:", token);
 
     await session.commitTransaction();
     session.endSession();
+
+    const userData = newUsers[0].toObject();
+    delete userData.password, delete userData.__v;
 
     res.status(201).json({
       success: true,
       message: "User created successfully",
       data: {
         token,
-        User: newUsers[0],
+        User: userData,
       },
     });
   } catch (err) {
@@ -85,7 +83,6 @@ export const signIn = async (req, res, next) => {
       error.statusCode = 401;
       throw error;
     }
-
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
       expiresIn: JWT_EXPIRES_IN,
     });

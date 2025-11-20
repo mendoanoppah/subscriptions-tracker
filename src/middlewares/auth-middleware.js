@@ -13,13 +13,23 @@ export default async function authorized(req, res, next) {
       token = req.headers.authorization.split(" ")[1];
     }
 
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
+    if (!token) {
+      console.log("No token found");
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // console.log("Received token:", token);
+    // console.log("JWT_SECRET:", JWT_SECRET);
 
     const decode = jwt.verify(token, JWT_SECRET);
+    // console.log("Decoded token:", decode);
 
     const user = await User.findById(decode.userId);
 
-    if (!user) return res.status(401).json({ message: "Unauthorized" });
+    if (!user) {
+      console.log("User not found");
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
     req.user = user;
 
