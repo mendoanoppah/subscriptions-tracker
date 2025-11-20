@@ -5,7 +5,7 @@ import importPlugin from "eslint-plugin-import";
 
 export default defineConfig([
   {
-    files: ["**/*.{js,mjs,cjs}"],
+    files: ["**/*.{js}"],
     plugins: {
       js,
       import: importPlugin,
@@ -22,16 +22,14 @@ export default defineConfig([
         "error",
         {
           js: "always",
-          mjs: "always",
-          cjs: "always",
-          ts: "always"
+          ts: "always",
         },
       ],
     },
     settings: {
       "import/resolver": {
         node: {
-          extensionss: [".js", ".mjs", ".cjs"],
+          extensionss: [".js"],
         },
       },
     },
