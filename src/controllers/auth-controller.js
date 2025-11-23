@@ -11,9 +11,8 @@ export const signUp = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
-    const existingUser = await User.findOne({
-      name,
-    });
+    // Check if a user already exists
+    const existingUser = await User.findOne({ email });
 
     if (existingUser) {
       const error = new Error("User already exists");
@@ -21,44 +20,34 @@ export const signUp = async (req, res, next) => {
       throw error;
     }
 
-    // hashing password
+    // Hash password
     const salt = await bcrypt.genSalt(10);
-    const hashingPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     const newUsers = await User.create(
-      [
-        {
-          name,
-          email,
-          password: hashingPassword,
-        },
-      ],
+      [{ name, email, password: hashedPassword }],
       { session }
     );
 
     const token = jwt.sign({ userId: newUsers[0]._id }, JWT_SECRET, {
       expiresIn: JWT_EXPIRES_IN,
     });
-    // console.log("Generated token:", token);
 
     await session.commitTransaction();
     session.endSession();
-
-    const userData = newUsers[0].toObject();
-    delete userData.password, delete userData.__v;
 
     res.status(201).json({
       success: true,
       message: "User created successfully",
       data: {
         token,
-        User: userData,
+        user: newUsers[0],
       },
     });
-  } catch (err) {
+  } catch (error) {
     await session.abortTransaction();
     session.endSession();
-    next(err);
+    next(error);
   }
 };
 
@@ -66,12 +55,10 @@ export const signIn = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({
-      email,
-    });
+    const user = await User.findOne({ email });
 
     if (!user) {
-      const error = new Error("User is not found");
+      const error = new Error("User not found");
       error.statusCode = 404;
       throw error;
     }
@@ -79,17 +66,18 @@ export const signIn = async (req, res, next) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      const error = new Error("invalid password");
+      const error = new Error("Invalid password");
       error.statusCode = 401;
       throw error;
     }
+
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
       expiresIn: JWT_EXPIRES_IN,
     });
 
     res.status(200).json({
       success: true,
-      message: "User signed is successfully",
+      message: "User signed in successfully",
       data: {
         token,
         user,
@@ -100,6 +88,4 @@ export const signIn = async (req, res, next) => {
   }
 };
 
-// "no-unused-vars": "off"
-// eslint-disable-next-line no-unused-vars
-export const signOut = async (_req, res, next) => {};
+export const signOut = async (req, res, next) => {};
